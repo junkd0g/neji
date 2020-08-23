@@ -16,27 +16,28 @@ go test ./...
 package main
 
 import (
-        "net/http"
-        "github.com/gorilla/mux"
-        "github.com/junkd0g/neji"
+	"errors"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	nerror "github.com/junkd0g/neji"
 )
 
 func HelloWorld(w http.ResponseWriter, r *http.Request) {
-        err := errors.New("This is the best error message ever")
-        errorResponse, _ := nerror.SimpeErrorResponseWithCode(500, err)
+	err := errors.New("This is the best error message ever")
+	errorResponse, _ := nerror.SimpeErrorResponseWithCode(500, err)
 
-        w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-
-        w.Write([]byte(errorResponse))
+	w.Write([]byte(errorResponse))
 }
 
 func main() {
 
-        router := mux.NewRouter().StrictSlash(true)
-        router.HandleFunc("/", HelloWorld)
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", HelloWorld)
 
-        http.ListenAndServe(":8076", router)
+	http.ListenAndServe(":8076", router)
 }
 
 ```
