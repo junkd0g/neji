@@ -44,4 +44,4 @@ func main() {
 
 ## Authors
 
-* **Iordanis Paschalidis** -[PurpleBooth](https://github.com/junkd0g)
+* **Iordanis Paschalidis** -[junkd0g](https://github.com/junkd0g)
