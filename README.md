@@ -42,6 +42,34 @@ func main() {
 
 ```
 
+```go
+
+nerror.SimpeErrorResponseWithCode(500, err)
+
+/*
+	will return this response
+
+	{
+		"message" : "Your json is wrong or something",
+		"status" : 500
+	}
+*/
+
+nerror.SimpeErrorResponseWithCode(500, err)
+
+/*
+	will return this response
+
+	{
+		"error" : {
+			"status" : 502,
+    		"message" : "Bad gateway."
+  		}
+	}
+*/
+
+```
+
 ## Authors
 
 * **Iordanis Paschalidis** -[junkd0g](https://github.com/junkd0g)

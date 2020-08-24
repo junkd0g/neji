@@ -17,8 +17,8 @@ type SimpleErrorMessage struct {
 // SimpleErrorMessageV2 returns json:
 /*
 	{
-  		"error" : {
-    		"status" : 502,
+		"error" : {
+			"status" : 502,
     		"message" : "Bad gateway."
   		}
 	}
@@ -55,8 +55,10 @@ func SimpeErrorResponseWithStatus(status int, err error) ([]byte, error) {
 	return json response in this format:
 
 	{
-		"message" : "Your json is wrong or something",
-		"status" : 500
+		"error" : {
+			"status" : 502,
+    		"message" : "Bad gateway."
+  		}
 	}
 
 	@return array of bytes of the json object
