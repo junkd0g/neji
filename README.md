@@ -25,7 +25,7 @@ import (
 
 func HelloWorld(w http.ResponseWriter, r *http.Request) {
 	err := errors.New("This is the best error message ever")
-	errorResponse, _ := nerror.SimpeErrorResponseWithCode(500, err)
+	errorResponse, _ := nerror.SimpeErrorResponseWithStatus(500, err)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -44,7 +44,7 @@ func main() {
 
 ```go
 
-nerror.SimpeErrorResponseWithCode(500, err)
+nerror.SimpeErrorResponseWithStatus(500, err)
 
 /*
 	will return this response
@@ -55,7 +55,7 @@ nerror.SimpeErrorResponseWithCode(500, err)
 	}
 */
 
-nerror.SimpeErrorResponseWithCode(500, err)
+nerror.SimpeErrorResponseWithStatusV2(500, err)
 
 /*
 	will return this response
