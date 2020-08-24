@@ -63,7 +63,7 @@ nerror.SimpeErrorResponseWithCode(500, err)
 	{
 		"error" : {
 			"status" : 502,
-    		"message" : "Bad gateway."
+			"message" : "Bad gateway."
   		}
 	}
 */

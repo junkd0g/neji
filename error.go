@@ -57,7 +57,7 @@ func SimpeErrorResponseWithStatus(status int, err error) ([]byte, error) {
 	{
 		"error" : {
 			"status" : 502,
-    		"message" : "Bad gateway."
+			"message" : "Bad gateway."
   		}
 	}
 
