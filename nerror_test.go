@@ -14,3 +14,11 @@ func Test_ErrInvalidParameter(t *testing.T) {
 	})
 
 }
+
+func Test_WrapError(t *testing.T) {
+	t.Run("Create successfully a Common object with optionalTemplatePath", func(t *testing.T) {
+		errMessage := nerror.WrapError(nerror.ErrInvalidParameter("path"), "error")
+		assert.Equal(t, errMessage.Error(), "error: missing parameter path")
+	})
+
+}
