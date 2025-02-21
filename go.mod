@@ -1,6 +1,6 @@
 module github.com/junkd0g/neji
 
-go 1.18
+go 1.23
 
 require github.com/stretchr/testify v1.7.1
 
