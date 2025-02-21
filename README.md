@@ -1,6 +1,11 @@
 # neji
 
-Package junkd0g/neji is a simple JSON error response library.
+**`neji`** is a lightweight Go package for generating structured **JSON error responses**.  
+It provides utility functions to standardize error handling 
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/junkd0g/neji)](https://goreportcard.com/report/github.com/junkd0g/neji)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GoDoc](https://pkg.go.dev/badge/github.com/your-repo/neji.svg)](https://pkg.go.dev/github.com/junkd0g/neji)
 
 ## Installing
 

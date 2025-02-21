@@ -1,0 +1,44 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go (Latest Stable Version)
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - name: Cache Go Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run Tests with Coverage
+        run: |
+          go test -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out | awk '/total:/ {if ($3 < 100.0) exit 1}'
+
+      - name: Run Go Linter
+        run: golangci-lint run ./...
+
+      - name: Check for Vulnerabilities
+        run: govulncheck ./...
+
+      - name: Build
+        run: go build -v ./...
