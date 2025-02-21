@@ -9,7 +9,7 @@ func TestSimpeErrorResponseWithCode(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
 	statsErrJSONBody, err := SimpleErrorResponseWithStatus(500, err1)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	errorJSON := `{"message":"math: square root of negative number","status":500}`
@@ -24,7 +24,7 @@ func TestSimpeErrorResponseWithCodeV2(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
 	statsErrJSONBody, err := SimpleErrorResponseWithCodeV2(500, err1)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	errorJSON := `{"error":{"message":"math: square root of negative number","status":500}}`
