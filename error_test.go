@@ -7,7 +7,7 @@ import (
 
 func TestSimpeErrorResponseWithCode(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
-	statsErrJSONBody, err := SimpeErrorResponseWithStatus(500, err1)
+	statsErrJSONBody, err := SimpleErrorResponseWithStatus(500, err1)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -22,7 +22,7 @@ func TestSimpeErrorResponseWithCode(t *testing.T) {
 
 func TestSimpeErrorResponseWithCodeV2(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
-	statsErrJSONBody, err := SimpeErrorResponseWithCodeV2(500, err1)
+	statsErrJSONBody, err := SimpleErrorResponseWithCodeV2(500, err1)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
