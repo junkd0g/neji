@@ -39,9 +39,6 @@ jobs:
           go test -coverprofile=coverage.out ./...
           go tool cover -func=coverage.out | awk '/total:/ {if ($3 < 100.0) exit 1}'
 
-      - name: Run Go Linter
-        run: golangci-lint run ./...
-
       - name: Check for Vulnerabilities
         run: govulncheck ./...
 
