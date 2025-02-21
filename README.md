@@ -11,11 +11,11 @@ It provides utility functions to standardize error handling
 
 go get -u github.com/junkd0g/neji
 
-## Running the tests
+## ✅ Running Tests
 
 go test ./...
 
-## Example
+## 🚀 Usage
 
 ```go
 package main
@@ -74,6 +74,9 @@ nerror.SimpeErrorResponseWithStatusV2(500, err)
 */
 
 ```
+## 📝 License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Authors
 
