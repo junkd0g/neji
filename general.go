@@ -16,8 +16,8 @@ const (
 //	err := ErrInvalidParameter("user_id")
 //	fmt.Println(err) // Output: "missing parameter user_id"
 //
-// @param message The name of the missing or invalid parameter.
-// @return        Formatted error message.
+// The message parameter should contain the name of the missing or invalid parameter.
+// Returns a formatted error with the parameter name included in the message.
 func ErrInvalidParameter(message string) error {
 	return fmt.Errorf(missingParameterText, message)
 }
@@ -33,9 +33,9 @@ func ErrInvalidParameter(message string) error {
 //	wrappedErr := WrapError(err, "failed to fetch data")
 //	fmt.Println(wrappedErr) // Output: "failed to fetch data: connection timeout"
 //
-// @param err     The original error to wrap.
-// @param message Additional context message to include.
-// @return        Wrapped error message.
+// The err parameter is the original error to wrap, and message provides additional
+// context. Returns a new error that includes both the context message and the
+// original error, maintaining the error chain for use with errors.Is and errors.As.
 func WrapError(err error, message string) error {
 	return fmt.Errorf("%s: %w", message, err)
 }

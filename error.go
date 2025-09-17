@@ -46,9 +46,9 @@ type SimpleErrorMessageV2 struct {
 //	    "status": 500
 //	}
 //
-// @param status HTTP status code.
-// @param err    The error message.
-// @return       JSON-encoded error response as []byte and any marshaling error.
+// The status parameter specifies the HTTP status code, and err provides
+// the error message. Returns the JSON-encoded error response as []byte
+// and any marshaling error that may occur.
 func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 	message := ""
 	if err != nil {
@@ -77,9 +77,9 @@ func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 //	    }
 //	}
 //
-// @param status HTTP status code.
-// @param err    The error message.
-// @return       JSON-encoded error response as []byte and any marshaling error.
+// The status parameter specifies the HTTP status code, and err provides
+// the error message. Returns the JSON-encoded error response as []byte
+// and any marshaling error that may occur.
 func SimpleErrorResponseWithCodeV2(status int, err error) ([]byte, error) {
 	message := ""
 	if err != nil {
