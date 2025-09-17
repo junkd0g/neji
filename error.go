@@ -50,9 +50,14 @@ type SimpleErrorMessageV2 struct {
 // @param err    The error message.
 // @return       JSON-encoded error response as []byte and any marshaling error.
 func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessage{
-			Message: err.Error(),
+			Message: message,
 			Status:  status,
 		},
 	)
@@ -76,10 +81,15 @@ func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 // @param err    The error message.
 // @return       JSON-encoded error response as []byte and any marshaling error.
 func SimpleErrorResponseWithCodeV2(status int, err error) ([]byte, error) {
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessageV2{
 			ErrorST: SimpleErrorMessage{
-				Message: err.Error(),
+				Message: message,
 				Status:  status,
 			},
 		})

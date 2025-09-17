@@ -1,9 +1,10 @@
-package nerror
+package nerror_test
 
 import (
 	"errors"
 	"testing"
 
+	nerror "github.com/junkd0g/neji"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -44,11 +45,18 @@ func TestSimpleErrorResponseWithStatus(t *testing.T) {
 			expectedJSON: `{"message":"invalid JSON: missing \"field\"","status":422}`,
 			expectError:  false,
 		},
+		{
+			name:         "nil error",
+			status:       404,
+			inputError:   nil,
+			expectedJSON: `{"message":"","status":404}`,
+			expectError:  false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SimpleErrorResponseWithStatus(tt.status, tt.inputError)
+			result, err := nerror.SimpleErrorResponseWithStatus(tt.status, tt.inputError)
 
 			if tt.expectError {
 				require.Error(t, err)
@@ -97,11 +105,18 @@ func TestSimpleErrorResponseWithCodeV2(t *testing.T) {
 			expectedJSON: `{"error":{"message":"invalid JSON: missing \"field\"","status":422}}`,
 			expectError:  false,
 		},
+		{
+			name:         "nil error",
+			status:       403,
+			inputError:   nil,
+			expectedJSON: `{"error":{"message":"","status":403}}`,
+			expectError:  false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SimpleErrorResponseWithCodeV2(tt.status, tt.inputError)
+			result, err := nerror.SimpleErrorResponseWithCodeV2(tt.status, tt.inputError)
 
 			if tt.expectError {
 				require.Error(t, err)
