@@ -1,113 +1,154 @@
+# neji
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/junkd0g/neji)](https://goreportcard.com/report/github.com/junkd0g/neji)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://pkg.go.dev/badge/github.com/junkd0g/neji.svg)](https://pkg.go.dev/github.com/junkd0g/neji)
 
-# neji
+`neji` is a small Go package for generating structured JSON error responses
+and standardising parameter-validation error messages. The import path is
+`github.com/junkd0g/neji`; the package name is `nerror`.
 
-**`neji`** is a lightweight Go package for generating structured **JSON error responses** and handling parameter validation errors. It provides utility functions to standardize error handling in API applications.
+## Why
+
+Every Go HTTP service ends up reinventing the same two error envelopes — a
+flat `{message,status}` one and a nested `{error:{message,status}}` one. `neji`
+gives you both, plus tiny helpers for "missing parameter X" and `fmt.Errorf`
+wrapping, without dragging in a framework.
 
 ## Features
 
-- 🔧 **Structured JSON Error Responses**: Generate consistent error responses in two formats
-- ✅ **Parameter Validation**: Standardized missing parameter error messages  
-- 🔗 **Error Wrapping**: Preserve original errors while adding context
-- 🧪 **Well Tested**: Comprehensive test coverage with edge cases
-- 📦 **Zero Dependencies**: Only standard library (except for tests)
+- Two structured JSON error response shapes (flat and nested).
+- Standardised "missing parameter X" message via `ErrInvalidParameter`.
+- `WrapError` for `errors.Is` / `errors.As`-compatible wrapping.
+- Zero runtime dependencies (`testify` for tests only).
 
-## Installing
+## Requirements
 
-```bash
+- Go 1.23 or newer.
+
+## Installation
+
+```sh
 go get -u github.com/junkd0g/neji
 ```
 
-## ✅ Running Tests
-
-```bash
-go test ./...
-```
-
-## 🚀 Usage
-
-### Basic Error Response
+## Quick start
 
 ```go
 package main
 
 import (
-	"errors"
-	"net/http"
+    "errors"
+    "net/http"
 
-	"github.com/gorilla/mux"
-	nerror "github.com/junkd0g/neji"
+    nerror "github.com/junkd0g/neji"
 )
 
 func HelloWorld(w http.ResponseWriter, r *http.Request) {
-	err := errors.New("This is the best error message ever")
-	errorResponse, _ := nerror.SimpleErrorResponseWithStatus(500, err)
+    err := errors.New("this is the best error message ever")
+    body, _ := nerror.SimpleErrorResponseWithStatus(http.StatusInternalServerError, err)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(errorResponse)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusInternalServerError)
+    w.Write(body)
 }
 
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", HelloWorld)
-	http.ListenAndServe(":8076", router)
+    http.HandleFunc("/", HelloWorld)
+    http.ListenAndServe(":8076", nil)
 }
 ```
 
-### API Reference
+## API Reference
 
-#### SimpleErrorResponseWithStatus
+### Types
 
 ```go
-nerror.SimpleErrorResponseWithStatus(500, err)
+type SimpleErrorMessage struct {
+    Message string `json:"message"`
+    Status  int    `json:"status"`
+}
+
+type SimpleErrorMessageV2 struct {
+    ErrorST SimpleErrorMessage `json:"error"`
+}
 ```
 
-Returns:
+### Functions
+
+```go
+func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error)
+func SimpleErrorResponseWithCodeV2(status int, err error) ([]byte, error)
+func ErrInvalidParameter(message string) error
+func WrapError(err error, message string) error
+```
+
+#### `SimpleErrorResponseWithStatus`
+
+Returns the flat envelope:
+
 ```json
 {
-	"message": "Your json is wrong or something",
-	"status": 500
+    "message": "your JSON is wrong or something",
+    "status": 500
 }
 ```
 
-#### SimpleErrorResponseWithCodeV2
+#### `SimpleErrorResponseWithCodeV2`
 
-```go
-nerror.SimpleErrorResponseWithCodeV2(500, err)
-```
+Returns the nested envelope:
 
-Returns:
 ```json
 {
-	"error": {
-		"status": 500,
-		"message": "Your json is wrong or something"
-	}
+    "error": {
+        "status": 500,
+        "message": "your JSON is wrong or something"
+    }
 }
 ```
 
-#### Parameter Validation
+#### `ErrInvalidParameter`
 
 ```go
-// Generate standardized parameter error
 err := nerror.ErrInvalidParameter("user_id")
-// Returns: "missing parameter user_id"
+// err.Error() == "missing parameter user_id"
 ```
 
-#### Error Wrapping
+#### `WrapError`
 
 ```go
-// Wrap errors with additional context
-originalErr := errors.New("connection timeout")
-wrappedErr := nerror.WrapError(originalErr, "failed to fetch data")
-// Returns: "failed to fetch data: connection timeout"
+original := errors.New("connection timeout")
+wrapped := nerror.WrapError(original, "failed to fetch data")
+// wrapped.Error() == "failed to fetch data: connection timeout"
+// errors.Is(wrapped, original) == true
 ```
-## 📝 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+## Testing
 
-## Authors
+```sh
+go test ./...
+```
 
-* **Iordanis Paschalidis** -[junkd0g](https://github.com/junkd0g)
+With coverage:
+
+```sh
+go test -race -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+```
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes.
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a pull request.
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE)
+file for details.
+
+## Author
+
+Iordanis Paschalidis — [@junkd0g](https://github.com/junkd0g)
