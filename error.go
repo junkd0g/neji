@@ -8,14 +8,6 @@ package nerror
 
 import "encoding/json"
 
-func errorMessage(err error) string {
-	if err == nil {
-		return ""
-	}
-
-	return err.Error()
-}
-
 // SimpleErrorMessage represents a basic JSON error response format.
 //
 // Example JSON output:
@@ -54,15 +46,18 @@ type SimpleErrorMessageV2 struct {
 //	    "status": 500
 //	}
 //
-// @param status HTTP status code.
-// @param err    The error message.
-// @return       JSON-encoded error response as []byte and any marshaling error.
-//
-// If err is nil, the response uses an empty message.
+// The status parameter specifies the HTTP status code, and err provides
+// the error message. Returns the JSON-encoded error response as []byte
+// and any marshaling error that may occur.
 func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessage{
-			Message: errorMessage(err),
+			Message: message,
 			Status:  status,
 		},
 	)
@@ -82,16 +77,19 @@ func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 //	    }
 //	}
 //
-// @param status HTTP status code.
-// @param err    The error message.
-// @return       JSON-encoded error response as []byte and any marshaling error.
-//
-// If err is nil, the response uses an empty message.
+// The status parameter specifies the HTTP status code, and err provides
+// the error message. Returns the JSON-encoded error response as []byte
+// and any marshaling error that may occur.
 func SimpleErrorResponseWithCodeV2(status int, err error) ([]byte, error) {
+	message := ""
+	if err != nil {
+		message = err.Error()
+	}
+
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessageV2{
 			ErrorST: SimpleErrorMessage{
-				Message: errorMessage(err),
+				Message: message,
 				Status:  status,
 			},
 		})
