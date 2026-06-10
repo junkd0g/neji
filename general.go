@@ -36,6 +36,12 @@ func ErrInvalidParameter(message string) error {
 // @param err     The original error to wrap.
 // @param message Additional context message to include.
 // @return        Wrapped error message.
+//
+// If err is nil, WrapError returns nil.
 func WrapError(err error, message string) error {
+	if err == nil {
+		return nil
+	}
+
 	return fmt.Errorf("%s: %w", message, err)
 }

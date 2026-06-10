@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSimpeErrorResponseWithCode(t *testing.T) {
+func TestSimpleErrorResponseWithStatus(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
 	statsErrJSONBody, err := SimpleErrorResponseWithStatus(500, err1)
 	if err != nil {
@@ -20,7 +20,20 @@ func TestSimpeErrorResponseWithCode(t *testing.T) {
 
 }
 
-func TestSimpeErrorResponseWithCodeV2(t *testing.T) {
+func TestSimpleErrorResponseWithStatusNilError(t *testing.T) {
+	statsErrJSONBody, err := SimpleErrorResponseWithStatus(500, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	errorJSON := `{"message":"","status":500}`
+
+	if string(statsErrJSONBody) != errorJSON {
+		t.Fatalf("Responses are not equal %s with %s", string(statsErrJSONBody), errorJSON)
+	}
+}
+
+func TestSimpleErrorResponseWithCodeV2(t *testing.T) {
 	err1 := errors.New("math: square root of negative number")
 	statsErrJSONBody, err := SimpleErrorResponseWithCodeV2(500, err1)
 	if err != nil {
@@ -33,4 +46,17 @@ func TestSimpeErrorResponseWithCodeV2(t *testing.T) {
 		t.Fatalf("Responses are not equal %s with %s", string(statsErrJSONBody), errorJSON)
 	}
 
+}
+
+func TestSimpleErrorResponseWithCodeV2NilError(t *testing.T) {
+	statsErrJSONBody, err := SimpleErrorResponseWithCodeV2(500, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	errorJSON := `{"error":{"message":"","status":500}}`
+
+	if string(statsErrJSONBody) != errorJSON {
+		t.Fatalf("Responses are not equal %s with %s", string(statsErrJSONBody), errorJSON)
+	}
 }

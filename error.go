@@ -8,6 +8,14 @@ package nerror
 
 import "encoding/json"
 
+func errorMessage(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	return err.Error()
+}
+
 // SimpleErrorMessage represents a basic JSON error response format.
 //
 // Example JSON output:
@@ -49,10 +57,12 @@ type SimpleErrorMessageV2 struct {
 // @param status HTTP status code.
 // @param err    The error message.
 // @return       JSON-encoded error response as []byte and any marshaling error.
+//
+// If err is nil, the response uses an empty message.
 func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessage{
-			Message: err.Error(),
+			Message: errorMessage(err),
 			Status:  status,
 		},
 	)
@@ -75,11 +85,13 @@ func SimpleErrorResponseWithStatus(status int, err error) ([]byte, error) {
 // @param status HTTP status code.
 // @param err    The error message.
 // @return       JSON-encoded error response as []byte and any marshaling error.
+//
+// If err is nil, the response uses an empty message.
 func SimpleErrorResponseWithCodeV2(status int, err error) ([]byte, error) {
 	JSONBody, errMarshal := json.Marshal(
 		SimpleErrorMessageV2{
 			ErrorST: SimpleErrorMessage{
-				Message: err.Error(),
+				Message: errorMessage(err),
 				Status:  status,
 			},
 		})
