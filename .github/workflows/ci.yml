@@ -12,6 +12,11 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.23', '1.24', '1.25']
+        module: ['.', 'v2']
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
 
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +46,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ['.', 'v2']
+
     steps:
       - uses: actions/checkout@v4
 
@@ -50,13 +59,17 @@ jobs:
           go-version: stable
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
-          args: --timeout=5m
+          working-directory: ${{ matrix.module }}
 
   security-scan:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ['.', 'v2']
+
     steps:
       - uses: actions/checkout@v4
 
@@ -70,3 +83,4 @@ jobs:
         with:
           go-version-input: stable
           go-package: ./...
+          work-dir: ${{ matrix.module }}

@@ -226,13 +226,13 @@ nerror.Internal("oops").Wrap(err)
 | `ErrInvalidParameter("user_id")` | `nerror.BadRequest("missing parameter user_id")` or a catalog code |
 
 **v1 is frozen** — it stays installable as `github.com/junkd0g/neji` and
-its documentation lives at [docs/v1.md](docs/v1.md), but new development
+its documentation lives at [../docs/v1.md](../docs/v1.md), but new development
 happens here.
 
 ## Running tests
 
 ```sh
-cd v2 && go test ./...
+go test ./...
 ```
 
 ## License
