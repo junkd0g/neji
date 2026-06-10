@@ -162,5 +162,5 @@ func writeJSON(w http.ResponseWriter, e *Error, body any) {
 	}
 
 	w.WriteHeader(e.Status)
-	w.Write(payload)
+	_, _ = w.Write(payload)
 }

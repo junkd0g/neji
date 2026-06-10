@@ -46,11 +46,11 @@ func (c Catalog) DocsHandler() http.Handler {
 				})
 			}
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			json.NewEncoder(w).Encode(map[string]any{"errors": entries})
+			_ = json.NewEncoder(w).Encode(map[string]any{"errors": entries})
 
 		case "md", "markdown":
 			w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-			w.Write([]byte(c.Markdown()))
+			_, _ = w.Write([]byte(c.Markdown()))
 
 		case "openapi":
 			spec, err := c.OpenAPI()
@@ -59,7 +59,7 @@ func (c Catalog) DocsHandler() http.Handler {
 				return
 			}
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.Write(spec)
+			_, _ = w.Write(spec)
 
 		default:
 			Write(w, BadRequest("unknown format, want json, md or openapi").
