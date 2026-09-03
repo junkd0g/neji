@@ -75,7 +75,9 @@ Content-Type: application/json; charset=utf-8
 ```
 
 The wrapped cause (the database error) was logged with the same
-correlation ID — and never sent to the client.
+correlation ID — and never sent to the client. The ID is also in the
+`X-Correlation-ID` response header, and if the request carried an
+`X-Request-ID`, that is the ID you get back.
 
 ## The catalog
 
@@ -88,11 +90,35 @@ Errors.New("invalid_payload").With("field", "email")          // add details
 Errors.Wrap("user_not_found", err)                            // attach a cause
 ```
 
-`errors.Is` matches by code, anywhere in the chain:
+Match by code, anywhere in the chain:
 
 ```go
-if errors.Is(err, Errors.New("user_not_found")) { ... }
+if Errors.Is(err, "user_not_found") { ... }              // allocation-free
+if errors.Is(err, Errors.New("user_not_found")) { ... }  // also works
+
+nerror.Code(err)   // "user_not_found" — what the client would see
+nerror.Status(err) // 404
 ```
+
+`nerror.Code` and `nerror.Status` mirror `Write`: a plain Go error
+reports `"internal"` and `500`, nil reports `""` and `0`.
+
+Validation failures carry their fields as data:
+
+```go
+return Errors.New("invalid_payload").
+	WithField("email", "must be a valid address").
+	WithField("age", "must be positive")
+```
+
+```json
+{"error":{"code":"invalid_payload","status":422,"message":"validation failed",
+  "details":{"fields":[{"field":"email","message":"must be a valid address"},
+                       {"field":"age","message":"must be positive"}]}}}
+```
+
+`nerror.Fields(err)` reads them back, on the server or in a Go client
+after `Parse`.
 
 Catch catalog mistakes in CI:
 
@@ -117,7 +143,8 @@ fmt.Println(Errors.Markdown())
 | `user_not_found` | 404 Not Found | `NOT_FOUND` | no | user does not exist |
 
 `Errors.OpenAPI()` emits an OpenAPI 3.1 components fragment: a shared
-`Error` schema (with the code enum) plus one reusable response per code.
+`Error` schema (with the code enum, `correlation_id` and validation
+`fields`) plus one reusable response per code.
 
 And the API serves its own docs, generated live on every request:
 
@@ -143,9 +170,9 @@ if err := nerror.Parse(resp); err != nil {
 }
 ```
 
-It understands both wire formats neji produces, and a non-JSON body (a
-bare nginx 502, say) still yields a `*Error` with the status and code
-`http_error`.
+It understands both wire formats neji produces, reads `Retry-After` as
+either seconds or an HTTP-date, and a non-JSON body (a bare nginx 502,
+say) still yields a `*Error` with the status and code `http_error`.
 
 ## Debug mode and correlation IDs
 
@@ -173,8 +200,23 @@ nerror.Debug = true // at startup, never in prod
 }
 ```
 
-Already have a request or trace ID? `err.WithCorrelationID(traceID)`
-makes neji use yours instead of generating one.
+Already have a request or trace ID? `nerror.Handler` (and `WriteFor`)
+reuse an incoming `X-Request-ID` header automatically, so the same ID
+flows from the client through your proxy into your logs. To set one by
+hand, `err.WithCorrelationID(traceID)` always wins. The header names are
+`nerror.RequestIDHeader` and `nerror.CorrelationIDHeader`; set either to
+`""` to turn that side off.
+
+To log the request alongside the error, use the request-aware hook:
+
+```go
+nerror.OnWriteRequest = func(e *nerror.Error, r *http.Request) {
+	slog.Error("api error", "method", r.Method, "path", r.URL.Path, "error", e)
+}
+```
+
+`Handler`, `WriteFor` and `WriteProblemFor` call it; plain `Write` has no
+request and calls `OnWrite`. Set both and each error is reported once.
 
 ## One error, every protocol
 
@@ -215,6 +257,13 @@ nerror.Internal("oops").Wrap(err)
 (`BadRequest`, `Unauthorized`, `Forbidden`, `NotFound`, `Conflict`,
 `UnprocessableEntity`, `TooManyRequests`, `Internal`, `Unavailable`, or
 `nerror.New(status, code, message)` for anything else.)
+
+## Other routers
+
+`nerror.Handler` is a plain `http.Handler`, so it drops straight into
+chi, gorilla/mux or the standard mux. For echo and gin, which have their
+own handler shapes, see [docs/adapters.md](docs/adapters.md): a few lines
+each, tested against the real routers, no extra dependency in neji.
 
 ## Migrating from v1
 

@@ -50,13 +50,6 @@ type Catalog map[string]Definition
 // bug signal rather than a panic. Catch these at startup with Validate.
 func (c Catalog) New(code string) *Error {
 	def, ok := c[code]
-	if !ok {
-		return &Error{
-			Status:  http.StatusInternalServerError,
-			Code:    "unknown_error",
-			Message: fmt.Sprintf("unknown error code %q", code),
-		}
-	}
 	e := &Error{
 		Code:       code,
 		Status:     def.Status,
@@ -65,7 +58,14 @@ func (c Catalog) New(code string) *Error {
 		Type:       def.Type,
 		GRPC:       def.GRPC,
 	}
+	if !ok {
+		e.Status = http.StatusInternalServerError
+		e.Code = "unknown_error"
+		e.Message = fmt.Sprintf("unknown error code %q", code)
+	}
 	if Debug {
+		// Captured for unknown codes as well: that stack points straight
+		// at the typo.
 		e.stack = captureStack()
 	}
 	return e

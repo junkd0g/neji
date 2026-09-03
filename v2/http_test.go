@@ -128,3 +128,38 @@ func TestWriteProblemDefaultsTypeToAboutBlank(t *testing.T) {
 		t.Fatalf("expected about:blank type, got: %s", rec.Body.String())
 	}
 }
+
+func TestWriteSetsCorrelationIDHeader(t *testing.T) {
+	rec := httptest.NewRecorder()
+	nerror.Write(rec, testCatalog.New("user_not_found"))
+
+	header := rec.Header().Get("X-Correlation-ID")
+	if len(header) != 16 {
+		t.Fatalf("X-Correlation-ID = %q, want 16 hex chars", header)
+	}
+	if !strings.Contains(rec.Body.String(), `"correlation_id":"`+header+`"`) {
+		t.Fatalf("header %q does not match body %s", header, rec.Body.String())
+	}
+
+	rec = httptest.NewRecorder()
+	nerror.WriteProblem(rec, testCatalog.New("user_not_found").WithCorrelationID("req-1"))
+	if got := rec.Header().Get("X-Correlation-ID"); got != "req-1" {
+		t.Fatalf("WriteProblem X-Correlation-ID = %q", got)
+	}
+
+	// The header can be renamed or disabled.
+	nerror.CorrelationIDHeader = "X-Trace"
+	defer func() { nerror.CorrelationIDHeader = "X-Correlation-ID" }()
+	rec = httptest.NewRecorder()
+	nerror.Write(rec, testCatalog.New("user_not_found"))
+	if rec.Header().Get("X-Trace") == "" || rec.Header().Get("X-Correlation-ID") != "" {
+		t.Fatalf("renamed header not honoured: %v", rec.Header())
+	}
+
+	nerror.CorrelationIDHeader = ""
+	rec = httptest.NewRecorder()
+	nerror.Write(rec, testCatalog.New("user_not_found"))
+	if len(rec.Header()) != 1 { // Content-Type only
+		t.Fatalf("disabled header still set: %v", rec.Header())
+	}
+}

@@ -1,6 +1,7 @@
 package nerror_test
 
 import (
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -72,5 +73,16 @@ func TestCatalogValidate(t *testing.T) {
 		if err := c.Validate(); err == nil {
 			t.Errorf("catalog %+v should fail validation", c)
 		}
+	}
+}
+
+func TestCatalogUnknownCodeCapturesStackInDebug(t *testing.T) {
+	nerror.Debug = true
+	defer func() { nerror.Debug = false }()
+
+	rec := httptest.NewRecorder()
+	nerror.Write(rec, testCatalog.New("no_such_code"))
+	if !strings.Contains(rec.Body.String(), `"stack":[`) {
+		t.Fatalf("unknown code should carry a stack in debug mode: %s", rec.Body.String())
 	}
 }

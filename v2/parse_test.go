@@ -86,3 +86,34 @@ func TestParseNonJSONBody(t *testing.T) {
 		t.Fatalf("unexpected fallback error: %+v", e)
 	}
 }
+
+func TestParseRetryAfterHTTPDate(t *testing.T) {
+	resp := &http.Response{
+		StatusCode: 503,
+		Header:     http.Header{},
+		Body:       io.NopCloser(strings.NewReader("")),
+	}
+	resp.Header.Set("Retry-After", time.Now().Add(90*time.Second).UTC().Format(http.TimeFormat))
+
+	var e *nerror.Error
+	if !errors.As(nerror.Parse(resp), &e) {
+		t.Fatal("expected *Error")
+	}
+	// The date has one-second resolution, so allow a little slack.
+	if e.RetryAfter < 88*time.Second || e.RetryAfter > 91*time.Second {
+		t.Fatalf("RetryAfter = %s, want about 90s", e.RetryAfter)
+	}
+
+	for _, past := range []string{
+		time.Now().Add(-time.Minute).UTC().Format(http.TimeFormat),
+		"not a date",
+		"-5",
+		"0",
+	} {
+		resp.Header.Set("Retry-After", past)
+		resp.Body = io.NopCloser(strings.NewReader(""))
+		if !errors.As(nerror.Parse(resp), &e) || e.RetryAfter != 0 {
+			t.Fatalf("Retry-After %q should yield 0, got %s", past, e.RetryAfter)
+		}
+	}
+}

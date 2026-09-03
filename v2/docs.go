@@ -28,8 +28,8 @@ func (c Catalog) Markdown() string {
 }
 
 // OpenAPI renders the catalog as an OpenAPI 3.1 components fragment: a
-// shared Error schema plus one reusable response per error code, each with
-// a concrete example. Merge it into your spec or serve it directly:
+// shared Error schema (and the FieldError schema it references) plus one
+// reusable response per error code, each with a concrete example. Merge it into your spec or serve it directly:
 //
 //	spec, _ := Errors.OpenAPI()
 //
@@ -84,8 +84,33 @@ func (c Catalog) OpenAPI() ([]byte, error) {
 								"details": map[string]any{
 									"type":        "object",
 									"description": "Optional structured context for this occurrence.",
+									"properties": map[string]any{
+										"fields": map[string]any{
+											"type":        "array",
+											"description": "Invalid input fields, when the error is a validation failure.",
+											"items":       map[string]any{"$ref": "#/components/schemas/FieldError"},
+										},
+									},
+								},
+								"correlation_id": map[string]any{
+									"type":        "string",
+									"description": "Opaque ID that links this response to server-side logs.",
 								},
 							},
+						},
+					},
+				},
+				"FieldError": map[string]any{
+					"type":     "object",
+					"required": []string{"field", "message"},
+					"properties": map[string]any{
+						"field": map[string]any{
+							"type":        "string",
+							"description": "Name of the invalid input field.",
+						},
+						"message": map[string]any{
+							"type":        "string",
+							"description": "What is wrong with the field.",
 						},
 					},
 				},

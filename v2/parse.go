@@ -3,6 +3,7 @@ package nerror
 import (
 	"encoding/json"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -35,6 +36,9 @@ const maxParseBody = 1 << 20 // 1 MiB
 // carrying the response status and code "http_error", never a nil error
 // for an error status.
 //
+// Retry-After is accepted in both forms RFC 9110 allows: a delay in
+// seconds or an HTTP-date, which is converted to the remaining delay.
+//
 // Parse consumes resp.Body (up to 1 MiB); closing it remains the caller's
 // responsibility.
 func Parse(resp *http.Response) error {
@@ -47,9 +51,7 @@ func Parse(resp *http.Response) error {
 		Code:    "http_error",
 		Message: http.StatusText(resp.StatusCode),
 	}
-	if seconds, err := strconv.Atoi(resp.Header.Get("Retry-After")); err == nil && seconds > 0 {
-		e.RetryAfter = time.Duration(seconds) * time.Second
-	}
+	e.RetryAfter = parseRetryAfter(resp.Header.Get("Retry-After"))
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxParseBody))
 	if err != nil || len(body) == 0 {
@@ -88,4 +90,26 @@ func Parse(resp *http.Response) error {
 	}
 
 	return e
+}
+
+// parseRetryAfter reads a Retry-After header value: either delay-seconds
+// or an HTTP-date (RFC 9110 §10.2.3). Dates are converted to the time
+// remaining, rounded up to whole seconds; past dates, empty and malformed
+// values yield 0.
+func parseRetryAfter(value string) time.Duration {
+	if value == "" {
+		return 0
+	}
+	if seconds, err := strconv.Atoi(value); err == nil {
+		if seconds > 0 {
+			return time.Duration(seconds) * time.Second
+		}
+		return 0
+	}
+	if t, err := http.ParseTime(value); err == nil {
+		if d := time.Until(t); d > 0 {
+			return time.Duration(math.Ceil(d.Seconds())) * time.Second
+		}
+	}
+	return 0
 }

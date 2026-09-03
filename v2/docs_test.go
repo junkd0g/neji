@@ -73,3 +73,32 @@ func TestOpenAPI(t *testing.T) {
 		t.Fatalf("example = %v", content.Example)
 	}
 }
+
+func TestOpenAPIDescribesCorrelationIDAndFields(t *testing.T) {
+	spec, err := testCatalog.OpenAPI()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]struct {
+					Properties map[string]json.RawMessage `json:"properties"`
+				} `json:"properties"`
+			} `json:"schemas"`
+		} `json:"components"`
+	}
+	if err := json.Unmarshal(spec, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := doc.Components.Schemas["FieldError"]; !ok {
+		t.Fatal("missing FieldError schema")
+	}
+	errProps := doc.Components.Schemas["Error"].Properties["error"].Properties
+	if _, ok := errProps["correlation_id"]; !ok {
+		t.Fatal("Error schema does not describe correlation_id")
+	}
+	if !strings.Contains(string(errProps["details"]), `#/components/schemas/FieldError`) {
+		t.Fatalf("details schema does not reference FieldError: %s", errProps["details"])
+	}
+}
